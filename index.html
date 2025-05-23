@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        #login-box {
+            background: #1a2a6c;
+            padding: 30px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        #login-box input {
+            display: block;
+            margin: 15px auto;
+            padding: 12px;
+            width: 80%;
+            border: none;
+            border-radius: 5px;
+        }
+        #login-btn {
+            background: #ffffff;
+            color: #1a2a6c;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #error-msg {
+            color: #ff6b6b;
+            margin-top: 10px;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+        a-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sistema de Login -->
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2>Acceso Salud</h2>
+            <input type="text" id="username" placeholder="Usuario">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button id="login-btn">Ingresar</button>
+            <p id="error-msg">Credenciales incorrectas</p>
+        </div>
+    </div>
+
+    <!-- Escena A-Frame (inicialmente oculta) -->
+    <a-scene id="ar-scene" mindar-image="imageTargetSrc: targets1.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" style="visibility: hidden;">
+        <a-assets>
+          <a-asset-item id="avatarModel" src="LogoSalud.glb"></a-asset-item>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-gltf-model rotation="50 0 0" position="0 0 0" scale="60 60 60" src="#avatarModel" animation="property: position; to: 0 0 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"></a-gltf-model>
+        </a-entity>
+    </a-scene>
+
+    <script>
+        // Credenciales válidas
+        const VALID_USER = "admin";
+        const VALID_PASS = "1234";
+
+        document.getElementById('login-btn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if(username === VALID_USER && password === VALID_PASS) {
+                // Ocultar login
+                document.getElementById('login-overlay').style.display = 'none';
+                
+                // Mostrar escena AR
+                const scene = document.getElementById('ar-scene');
+                scene.style.visibility = 'visible';
+                
+                // Forzar inicio de MindAR
+                if (scene.hasLoaded) {
+                    startMindAR();
+                } else {
+                    scene.addEventListener('loaded', startMindAR);
+                }
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        });
+
+        function startMindAR() {
+            const scene = document.getElementById('ar-scene');
+            const arSystem = scene.systems['mindar-image-system'];
+            if (arSystem) {
+                arSystem.start(); // Iniciar el seguimiento AR
+            }
+        }
+    </script>
+</body>
+</html>
